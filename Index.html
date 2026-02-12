@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TO-DO LIST SYSTEM</title>
+
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .container {
+        background: #ffffff;
+        padding: 30px;
+        width: 420px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    /* ===== TITLES ===== */
+    .main-title {
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+        color: #000;
+        margin-bottom: 5px;
+    }
+
+    .sub-title {
+        text-align: center;
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 20px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        margin-bottom: 20px;
+    }
+
+    .task {
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        background: #f9f9f9;
+        transition: 0.3s;
+    }
+
+    .task label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .task input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .priority-tag {
+        font-size: 13px;
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 5px;
+        color: white;
+    }
+
+    .high { background: red; }
+    .medium { background: orange; }
+    .low { background: green; }
+
+    .completed {
+        border: 2px solid green;
+        background: #eaffea;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        background: #d9534f;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    button:hover {
+        background: #c9302c;
+    }
+
+    .stats {
+        margin-top: 20px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+    }
+
+    .stats p {
+        margin: 5px 0;
+        font-weight: bold;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ===== TITLE SECTION ===== -->
+    <h1 class="main-title">TO-DO LIST SYSTEM</h1>
+    <h3 class="sub-title">Task Application</h3>
+
+    <!-- Search -->
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search by task number (1,2,3)">
+    </div>
+
+    <!-- Task 1 -->
+    <div class="task" id="task1">
+        <label>Task-1 : Name</label>
+        <input type="text" id="nameTask" placeholder="Fill the name">
+        <input type="date" id="nameDue">
+        <div class="priority-tag high">High Priority</div>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="task" id="task2">
+        <label>Task-2 : Phone</label>
+        <input type="number" id="phoneTask" placeholder="Fill the number">
+        <input type="date" id="phoneDue">
+        <div class="priority-tag medium">Medium Priority</div>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="task" id="task3">
+        <label>Task-3 : Email</label>
+        <input type="email" id="emailTask" placeholder="Fill the email">
+        <input type="date" id="emailDue">
+        <div class="priority-tag low">Low Priority</div>
+    </div>
+
+    <button onclick="removeCompletedTasks()">Remove Completed Tasks</button>
+
+    <div class="stats">
+        <p>Total Tasks: <span id="total">3</span></p>
+        <p>Completed Tasks: <span id="completed">0</span></p>
+        <p>Pending Tasks: <span id="pending">3</span></p>
+    </div>
+
+</div>
+
+<script>
+
+const tasks = [
+    { input: document.getElementById("nameTask"), due: document.getElementById("nameDue"), container: document.getElementById("task1") },
+    { input: document.getElementById("phoneTask"), due: document.getElementById("phoneDue"), container: document.getElementById("task2") },
+    { input: document.getElementById("emailTask"), due: document.getElementById("emailDue"), container: document.getElementById("task3") }
+];
+
+function updateStatus() {
+    let completed = 0;
+
+    tasks.forEach(task => {
+        if (task.input.value.trim() !== "") {
+            task.container.classList.add("completed");
+            completed++;
+        } else {
+            task.container.classList.remove("completed");
+        }
+    });
+
+    document.getElementById("completed").innerText = completed;
+    document.getElementById("pending").innerText = tasks.length - completed;
+
+    saveData();
+}
+
+function saveData() {
+    const data = tasks.map(task => ({
+        value: task.input.value,
+        due: task.due.value
+    }));
+    localStorage.setItem("taskData", JSON.stringify(data));
+}
+
+function removeCompletedTasks() {
+    tasks.forEach(task => {
+        if (task.input.value.trim() !== "") {
+            task.input.value = "";
+            task.due.value = "";
+            task.container.classList.remove("completed");
+        }
+    });
+    updateStatus();
+}
+
+document.getElementById("searchInput").addEventListener("input", function() {
+    const keyword = this.value.trim();
+
+    tasks.forEach((task, index) => {
+        if (keyword === "") {
+            task.container.classList.remove("hidden");
+        } else {
+            task.container.classList.toggle("hidden", keyword != index + 1);
+        }
+    });
+});
+
+window.onload = () => {
+    const savedData = JSON.parse(localStorage.getItem("taskData"));
+    if (savedData) {
+        savedData.forEach((data, index) => {
+            tasks[index].input.value = data.value || "";
+            tasks[index].due.value = data.due || "";
+        });
+    }
+    updateStatus();
+};
+
+tasks.forEach(task => {
+    task.input.addEventListener("input", updateStatus);
+    task.due.addEventListener("change", updateStatus);
+});
+
+</script>
+
+</body>
+</html>
